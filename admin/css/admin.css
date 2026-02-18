@@ -1,0 +1,62 @@
+.sfe-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.sfe-stat-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 16px;
+}
+
+.sfe-stat-card h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.sfe-stat-numbers {
+    display: flex;
+    gap: 16px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.sfe-stat-sent {
+    color: #00a32a;
+}
+
+.sfe-stat-failed {
+    color: #d63638;
+}
+
+.sfe-stat-rate {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #787c82;
+}
+
+.sfe-stat-meta {
+    font-size: 13px;
+    color: #50575e;
+    line-height: 1.6;
+}
+
+.sfe-log-filters {
+    margin: 16px 0;
+    display: flex;
+    gap: 4px;
+}
+
+.sfe-status-sent {
+    color: #00a32a;
+    font-weight: 600;
+}
+
+.sfe-status-failed {
+    color: #d63638;
+    font-weight: 600;
+}
