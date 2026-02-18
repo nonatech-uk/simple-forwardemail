@@ -3,7 +3,7 @@
  * Plugin Name: Simple ForwardEmail
  * Plugin URI:  https://github.com/nonatech/simple-forwardemail
  * Description: Lightweight SMTP plugin for Forward Email with email logging and Healthchecks.io monitoring.
- * Version:     1.0.0
+ * Version:     1.1.0
  * Author:      Nonatech
  * Author URI:  https://nonatech.co.uk
  * License:     GPL-2.0-or-later
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'SFE_VERSION', '1.0.0' );
+define( 'SFE_VERSION', '1.1.0' );
 define( 'SFE_DB_VERSION', '1.0' );
 define( 'SFE_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SFE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -30,6 +30,7 @@ require_once SFE_PLUGIN_PATH . 'includes/class-mailer.php';
 require_once SFE_PLUGIN_PATH . 'includes/class-logger.php';
 require_once SFE_PLUGIN_PATH . 'includes/class-healthchecks.php';
 require_once SFE_PLUGIN_PATH . 'includes/class-dashboard.php';
+require_once SFE_PLUGIN_PATH . 'includes/class-updater.php';
 
 // Activation: create DB table.
 register_activation_hook( __FILE__, function () {
@@ -72,6 +73,7 @@ add_action( 'plugins_loaded', function () {
     if ( is_admin() ) {
         new SFE_Settings();
         new SFE_Dashboard();
+        new SFE_Updater();
     }
 } );
 

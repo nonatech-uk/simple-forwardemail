@@ -53,7 +53,15 @@ class SFE_Healthchecks {
         }
 
         $enc = new SFE_Encryption();
-        return $enc->decrypt( $encrypted );
+        $url = $enc->decrypt( $encrypted );
+
+        // Handle legacy double-encrypted values.
+        $second = $enc->decrypt( $url );
+        if ( $second !== $url ) {
+            $url = $second;
+        }
+
+        return $url;
     }
 
     private function get_fail_url(): string {
@@ -66,7 +74,15 @@ class SFE_Healthchecks {
 
         if ( $encrypted !== '' ) {
             $enc = new SFE_Encryption();
-            return $enc->decrypt( $encrypted );
+            $url = $enc->decrypt( $encrypted );
+
+            // Handle legacy double-encrypted values.
+            $second = $enc->decrypt( $url );
+            if ( $second !== $url ) {
+                $url = $second;
+            }
+
+            return $url;
         }
 
         // Fall back to appending /fail to the heartbeat URL.

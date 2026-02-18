@@ -65,8 +65,8 @@ class SFE_Settings {
             echo 'Failure pings alert you immediately when an email fails to send.</p>';
         }, 'simple-forwardemail' );
 
-        $this->add_field( 'healthchecks_url', 'Heartbeat Ping URL', 'sfe_healthchecks', 'url', 'SFE_HEALTHCHECKS_URL', 'https://hc-ping.com/your-uuid' );
-        $this->add_field( 'healthchecks_fail_url', 'Failure Ping URL', 'sfe_healthchecks', 'url', 'SFE_HEALTHCHECKS_FAIL_URL', 'Leave blank to use heartbeat URL + /fail' );
+        $this->add_field( 'healthchecks_url', 'Heartbeat Ping URL', 'sfe_healthchecks', 'url', 'SFE_HEALTHCHECKS_URL', 'https://hc-ping.com/your-uuid', true );
+        $this->add_field( 'healthchecks_fail_url', 'Failure Ping URL', 'sfe_healthchecks', 'url', 'SFE_HEALTHCHECKS_FAIL_URL', 'Leave blank to use heartbeat URL + /fail', true );
         $this->add_interval_field();
 
         // Logging section.
@@ -101,7 +101,12 @@ class SFE_Settings {
         // Password: only update if a new value is provided. Encrypt it.
         $raw_password = $input['smtp_password'] ?? '';
         if ( $raw_password !== '' ) {
-            $sanitized['smtp_password'] = $enc->encrypt( $raw_password );
+            // Guard: don't re-encrypt an already-encrypted value.
+            if ( SFE_Encryption::is_encrypted( $raw_password ) ) {
+                $sanitized['smtp_password'] = $raw_password;
+            } else {
+                $sanitized['smtp_password'] = $enc->encrypt( $raw_password );
+            }
         } else {
             $sanitized['smtp_password'] = $existing['smtp_password'] ?? '';
         }
@@ -109,14 +114,22 @@ class SFE_Settings {
         // Healthchecks URLs: encrypt them.
         $raw_hc_url = $input['healthchecks_url'] ?? '';
         if ( $raw_hc_url !== '' ) {
-            $sanitized['healthchecks_url'] = $enc->encrypt( esc_url_raw( $raw_hc_url ) );
+            if ( SFE_Encryption::is_encrypted( $raw_hc_url ) ) {
+                $sanitized['healthchecks_url'] = $raw_hc_url;
+            } else {
+                $sanitized['healthchecks_url'] = $enc->encrypt( esc_url_raw( $raw_hc_url ) );
+            }
         } else {
             $sanitized['healthchecks_url'] = '';
         }
 
         $raw_hc_fail = $input['healthchecks_fail_url'] ?? '';
         if ( $raw_hc_fail !== '' ) {
-            $sanitized['healthchecks_fail_url'] = $enc->encrypt( esc_url_raw( $raw_hc_fail ) );
+            if ( SFE_Encryption::is_encrypted( $raw_hc_fail ) ) {
+                $sanitized['healthchecks_fail_url'] = $raw_hc_fail;
+            } else {
+                $sanitized['healthchecks_fail_url'] = $enc->encrypt( esc_url_raw( $raw_hc_fail ) );
+            }
         } else {
             $sanitized['healthchecks_fail_url'] = '';
         }
@@ -185,10 +198,15 @@ class SFE_Settings {
 
     // Field helper methods.
 
-    private function add_field( string $key, string $label, string $section, string $type, string $constant = '', string $placeholder = '' ): void {
-        add_settings_field( $key, $label, function () use ( $key, $type, $constant, $placeholder ) {
+    private function add_field( string $key, string $label, string $section, string $type, string $constant = '', string $placeholder = '', bool $encrypted = false ): void {
+        add_settings_field( $key, $label, function () use ( $key, $type, $constant, $placeholder, $encrypted ) {
             $settings = get_option( 'sfe_settings', $this->defaults );
             $value    = $settings[ $key ] ?? $this->defaults[ $key ];
+
+            if ( $encrypted && $value !== '' && ! defined( $constant ?: '__SFE_NONE__' ) ) {
+                $enc   = new SFE_Encryption();
+                $value = $enc->decrypt( $value );
+            }
             $disabled = '';
 
             if ( $constant !== '' && defined( $constant ) ) {

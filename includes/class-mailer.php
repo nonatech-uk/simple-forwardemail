@@ -59,7 +59,15 @@ class SFE_Mailer {
             return '';
         }
 
-        $enc = new SFE_Encryption();
-        return $enc->decrypt( $encrypted );
+        $enc      = new SFE_Encryption();
+        $password = $enc->decrypt( $encrypted );
+
+        // Handle legacy double-encrypted passwords.
+        $second = $enc->decrypt( $password );
+        if ( $second !== $password ) {
+            $password = $second;
+        }
+
+        return $password;
     }
 }
