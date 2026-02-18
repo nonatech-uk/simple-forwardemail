@@ -186,7 +186,7 @@ class SFE_Logger {
 
         $offset = ( max( 1, $args['page'] ) - 1 ) * $args['per_page'];
 
-        $query = "SELECT * FROM $table WHERE $where ORDER BY $orderby $order LIMIT %d OFFSET %d";
+        $query = "SELECT id, to_email, from_email, subject, headers, status, error, created_at, (body IS NOT NULL AND body != '') AS has_body FROM $table WHERE $where ORDER BY $orderby $order LIMIT %d OFFSET %d";
         $params[] = $args['per_page'];
         $params[] = $offset;
 

@@ -60,3 +60,21 @@
     color: #d63638;
     font-weight: 600;
 }
+
+.sfe-toggle-body {
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.sfe-body-row td {
+    padding: 0 12px 12px;
+    background: #f6f7f7;
+}
+
+.sfe-email-body {
+    width: 100%;
+    min-height: 200px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+}

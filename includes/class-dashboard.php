@@ -8,6 +8,7 @@ class SFE_Dashboard {
     public function __construct() {
         add_action( 'admin_menu', [ $this, 'add_submenu' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_styles' ] );
+        add_action( 'wp_ajax_sfe_get_body', [ $this, 'ajax_get_body' ] );
     }
 
     public function add_submenu(): void {
@@ -34,5 +35,24 @@ class SFE_Dashboard {
         }
 
         include SFE_PLUGIN_PATH . 'admin/views/dashboard.php';
+    }
+
+    public function ajax_get_body(): void {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'Unauthorized', 403 );
+        }
+
+        check_ajax_referer( 'sfe_view_body' );
+
+        global $wpdb;
+        $id   = absint( $_GET['log_id'] ?? 0 );
+        $table = SFE_Logger::table_name();
+        $body = $wpdb->get_var( $wpdb->prepare( "SELECT body FROM $table WHERE id = %d", $id ) );
+
+        if ( $body === null ) {
+            wp_send_json_error( 'Not found', 404 );
+        }
+
+        wp_send_json_success( $body );
     }
 }

@@ -105,7 +105,12 @@ $base_url = admin_url( 'admin.php?page=sfe-email-log' );
                     <tr>
                         <td><?php echo esc_html( $log->created_at ); ?></td>
                         <td><?php echo esc_html( $log->to_email ); ?></td>
-                        <td><?php echo esc_html( $log->subject ); ?></td>
+                        <td>
+                            <?php echo esc_html( $log->subject ); ?>
+                            <?php if ( $log->has_body ) : ?>
+                                <br><a href="#" class="sfe-toggle-body" data-id="<?php echo esc_attr( $log->id ); ?>">View body</a>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <span class="sfe-status-<?php echo esc_attr( $log->status ); ?>">
                                 <?php echo esc_html( $log->status ); ?>
@@ -113,6 +118,13 @@ $base_url = admin_url( 'admin.php?page=sfe-email-log' );
                         </td>
                         <td><?php echo esc_html( $log->error ?? '' ); ?></td>
                     </tr>
+                    <?php if ( $log->has_body ) : ?>
+                        <tr class="sfe-body-row" id="sfe-body-<?php echo esc_attr( $log->id ); ?>" style="display:none;">
+                            <td colspan="5">
+                                <iframe class="sfe-email-body" sandbox></iframe>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             <?php endif; ?>
         </tbody>
@@ -144,3 +156,46 @@ $base_url = admin_url( 'admin.php?page=sfe-email-log' );
         </div>
     <?php endif; ?>
 </div>
+<script>
+document.querySelectorAll('.sfe-toggle-body').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var id = this.dataset.id;
+        var row = document.getElementById('sfe-body-' + id);
+        var visible = row.style.display !== 'none';
+
+        if (visible) {
+            row.style.display = 'none';
+            this.textContent = 'View body';
+            return;
+        }
+
+        var iframe = row.querySelector('iframe');
+        if (iframe.srcdoc) {
+            row.style.display = '';
+            this.textContent = 'Hide body';
+            return;
+        }
+
+        this.textContent = 'Loading\u2026';
+        var url = '<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>'
+            + '?action=sfe_get_body&log_id=' + id
+            + '&_ajax_nonce=<?php echo esc_js( wp_create_nonce( 'sfe_view_body' ) ); ?>';
+
+        fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    iframe.srcdoc = data.data;
+                    row.style.display = '';
+                    link.textContent = 'Hide body';
+                } else {
+                    link.textContent = 'Error loading';
+                }
+            })
+            .catch(function() {
+                link.textContent = 'Error loading';
+            });
+    });
+});
+</script>
